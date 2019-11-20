@@ -26,6 +26,7 @@ public class UserThread extends Thread{
 			printUser(dataOutputStream);
 			
 			String serverMessage = "New user connected "+userName;
+			System.out.println(serverMessage);
 			chatServer.boardcast(serverMessage, this, dataOutputStream);
 			
 			String clientMessage = null;
@@ -33,6 +34,7 @@ public class UserThread extends Thread{
 			do {
 				clientMessage = dataInputStream.readUTF();
 				serverMessage = "[" + userName +"]"+clientMessage;
+				System.out.println(serverMessage);
 				chatServer.boardcast(serverMessage, this, dataOutputStream);
 			}while(!clientMessage.equals("quit"));
 			
@@ -52,9 +54,13 @@ public class UserThread extends Thread{
 	
 	void printUser(DataOutputStream dataOutputStream) throws IOException {
 		if(chatServer.hasUser()) {
+			System.out.println("printUser "+chatServer.getUserName());
 			dataOutputStream.writeUTF("Connected users: "+chatServer.getUserName());
+			dataOutputStream.flush();
 		}else {
+			System.out.println("No user "+chatServer.getUserName());
 			dataOutputStream.writeUTF("No users connected");
+			dataOutputStream.flush();
 		}
 	}
 	
@@ -62,6 +68,7 @@ public class UserThread extends Thread{
 	void sendMessage(String message, DataOutputStream dataOutputStream) {
 		try {
 			dataOutputStream.writeUTF(message);
+			dataOutputStream.flush();
 		} catch (IOException e) {
 			System.out.println("Error "+e.getMessage());
 			e.printStackTrace();

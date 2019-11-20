@@ -23,13 +23,15 @@ public class WriteThread extends Thread{
 			
 			client.setUserName(userName);
 			dataOutputStream.writeUTF(userName);
+			dataOutputStream.flush();
 			
 			String message = null;
 			
 			do {
 				message = sc.nextLine();
 				dataOutputStream.writeUTF(message);
-			}while(!message.equals("q"));
+				dataOutputStream.flush();
+			}while(!message.equals("quit"));
 			
 			sc.close();
 		} catch (IOException e) {

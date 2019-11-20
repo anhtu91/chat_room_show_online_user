@@ -39,6 +39,7 @@ public class ChatServer {
 	void boardcast(String message, UserThread excludeUser, DataOutputStream dataOutputStream) {
 		for(UserThread aUser : userThreads) {
 			if(aUser != excludeUser) {
+				//System.out.println(message+excludeUser.getName());
 				aUser.sendMessage(message, dataOutputStream);
 			}
 		}

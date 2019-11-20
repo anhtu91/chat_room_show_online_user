@@ -22,7 +22,7 @@ public class ReadThread extends Thread {
 				String response = dataInputStream.readUTF();
 
 				if (client.getUserName() != null)
-					System.out.print("[" + client.getUserName() + "]: ");
+					System.out.print("[" + client.getUserName() + "]: "+response);
 			}
 		} catch (IOException e) {
 			System.out.println("Error input stream..." + e.getMessage());
