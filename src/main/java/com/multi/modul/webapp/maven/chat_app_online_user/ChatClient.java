@@ -3,7 +3,6 @@ package com.multi.modul.webapp.maven.chat_app_online_user;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Scanner;
 
 public class ChatClient {
 	private String hostName;

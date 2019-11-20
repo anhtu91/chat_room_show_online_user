@@ -21,8 +21,9 @@ public class ReadThread extends Thread {
 			while (true) {
 				String response = dataInputStream.readUTF();
 
-				if (client.getUserName() != null)
-					System.out.print("[" + client.getUserName() + "]: "+response);
+				if (client.getUserName() != null) {
+					System.out.println(response);
+				}
 			}
 		} catch (IOException e) {
 			System.out.println("Error input stream..." + e.getMessage());
