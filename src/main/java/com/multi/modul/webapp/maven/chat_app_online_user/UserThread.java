@@ -4,74 +4,70 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+ 
 
-public class UserThread extends Thread{
-	private Socket socket;
-	private ChatServer chatServer;
-	private static DataOutputStream dataOutputStream;
-
-	public UserThread(Socket socket, ChatServer chatServer) {
-		this.socket = socket;
-		this.chatServer = chatServer;
+public class UserThread extends Thread {
+    private Socket socket;
+    private ChatServer server;
+ 
+    public UserThread(Socket socket, ChatServer server) {
+    	this.socket = socket;
+    	this.server = server;
+    }
+    
+    public Socket getSocket() {
+		return socket;
 	}
-	
+
+	public ChatServer getServer() {
+		return server;
+	}
+
 	public void run() {
-		try {
+    	try {
 			DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
-			dataOutputStream = new DataOutputStream(socket.getOutputStream());
+			DataOutputStream dataOutputStream = null;
 			
-			String userName = dataInputStream.readUTF();
-			chatServer.addUserName(userName);
+			//Get online user
+			showUsers();
 			
-			printUser(dataOutputStream);
+			//Get client name
+			String newUser = dataInputStream.readUTF();
+			server.addUserName(newUser);
+			System.out.println("User "+newUser+" connected to server.");
 			
-			String serverMessage = "New user connected "+userName;
-			//System.out.println(serverMessage);
-			chatServer.boardcast(serverMessage, this, dataOutputStream);
+			//Send message new online user
+			for (UserThread userThread : server.getListThread()) {
+				if(userThread.getSocket().getPort() != this.getSocket().getPort()) {
+					dataOutputStream = new DataOutputStream(userThread.getSocket().getOutputStream());
+					dataOutputStream.writeUTF("User "+newUser+" connected to server.");
+					
+					dataOutputStream.flush();
+				}
+			}
 			
-			String clientMessage = null;
+			while(true) {
+				//Get message from client
+				String message = dataInputStream.readUTF();
+				message = "["+newUser+"]: "+message;
+				
+				//Send message to other clients
+				server.sendMessage(message, this, socket);
+			}
 			
-			do {
-				clientMessage = dataInputStream.readUTF();
-				serverMessage = "[" + userName +"]"+clientMessage;
-				System.out.println(serverMessage);
-				chatServer.boardcast(serverMessage, this, dataOutputStream);
-			}while(!clientMessage.equals("quit"));
 			
-			chatServer.removeUser(userName, this);
-			serverMessage = userName + " quitted";
-			chatServer.boardcast(serverMessage, this, dataOutputStream);
-			
-			dataInputStream.close();
-			dataOutputStream.close();
-			socket.close();
-		
 		} catch (IOException e) {
-			System.out.println("Error "+e.getMessage());
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
+    }
 	
-	void printUser(DataOutputStream dataOutputStream) throws IOException {
-		if(chatServer.hasUser()) {
-			//System.out.println("printUser "+chatServer.getUserName());
-			dataOutputStream.writeUTF("Connected users: "+chatServer.getUserName());
+	public void showUsers() {
+		if(server.getListUserName().isEmpty() /*&& server.getListThread().isEmpty()*/) {
+			System.out.println("No users online.");
 		}else {
-			//System.out.println("No user "+chatServer.getUserName());
-			dataOutputStream.writeUTF("No users connected");
-		}
-		dataOutputStream.flush();
-	}
-	
-	
-	void sendMessage(String message, DataOutputStream dataOutputStream) {
-		try {
-			//System.out.println(message);
-			dataOutputStream.writeUTF(message);
-			dataOutputStream.flush();
-		} catch (IOException e) {
-			System.out.println("Error "+e.getMessage());
-			e.printStackTrace();
+			System.out.println("Online users "+server.getListUserName());
 		}
 	}
+    
 }

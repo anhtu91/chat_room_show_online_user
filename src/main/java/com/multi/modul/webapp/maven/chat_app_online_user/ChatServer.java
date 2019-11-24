@@ -9,65 +9,74 @@ import java.util.Set;
 
 public class ChatServer {
 	private int port;
-	private Set<String> userNames = new HashSet<String>();
-	private Set<UserThread> userThreads = new HashSet<UserThread>();
-	
+	private Set<String> listUserName = new HashSet<>();
+	private Set<UserThread> listThread = new HashSet<>();
+
 	public ChatServer(int port) {
 		this.port = port;
 	}
+	
+	public int getPort() {
+		return port;
+	}
 
-	public void execute() {
+	public Set<String> getListUserName() {
+		return listUserName;
+	}
+
+	public Set<UserThread> getListThread() {
+		return listThread;
+	}
+
+	private void execute() {
 		ServerSocket serverSocket = null;
+
 		try {
 			serverSocket = new ServerSocket(port);
-			System.out.println("Server start....");
+			System.out.println("Server start...");
 
 			while (true) {
 				Socket socket = serverSocket.accept();
 				System.out.println("Client connected..." + socket);
-				
-				UserThread newUser = new UserThread(socket, this);
-				userThreads.add(newUser);
-				newUser.start();
+
+				UserThread userThread = new UserThread(socket, this);
+				listThread.add(userThread);
+				userThread.start();
 			}
+
 		} catch (IOException e) {
-			System.out.println("Error " + e.getMessage());
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	void boardcast(String message, UserThread excludeUser, DataOutputStream dataOutputStream) {
-		for (UserThread aUser : userThreads) {
-			if (aUser != excludeUser) {
-				//System.out.println(aUser);
-				aUser.sendMessage(message, dataOutputStream);
+	public void addUserName(String newUserName) {
+		listUserName.add(newUserName);
+	}
+
+	public void sendMessage(String message, UserThread currentUserThread, Socket socket) {
+		DataOutputStream dataOutputStream;
+		try {
+			for (UserThread userThread : listThread) {
+				if (userThread.getSocket().getPort() != currentUserThread.getSocket().getPort() //&& 
+						/*userThread.getSocket().getLocalPort() != currentUserThread.getSocket().getLocalPort() &&
+						userThread.getSocket().getInetAddress() != currentUserThread.getSocket().getInetAddress()*/) {
+					dataOutputStream = new DataOutputStream(userThread.getSocket().getOutputStream());
+					dataOutputStream.writeUTF(message);
+					dataOutputStream.flush();
+				}
 			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
-	void addUserName(String userName) {
-		userNames.add(userName);
-	}
-
-	void removeUser(String userName, UserThread aUser) {
-		boolean removed = userNames.remove(userName);
-		if (removed) {
-			userThreads.remove(aUser);
-			System.out.println("User " + userName + " quitted");
-		}
-	}
-
-	Set<String> getUserName() {
-		return this.userNames;
-	}
-
-	boolean hasUser() {
-		return !this.userNames.isEmpty();
-	}
-
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		int port = 3333;
-		ChatServer server = new ChatServer(port);
-		server.execute();
+
+		ChatServer chatserver = new ChatServer(port);
+		chatserver.execute();
 	}
 }
