@@ -16,12 +16,10 @@ public class ChatClient {
     public void execute() {
         try {
             Socket socket = new Socket(hostname, port);
- 
             System.out.println("Connected to the chat server");
  
             new ReadThread(socket, this).start();
-            new WriteThread(socket, this).start();
- 
+            new WriteThread(socket, this).start();   
         } catch (UnknownHostException ex) {
             System.out.println("Server not found: " + ex.getMessage());
         } catch (IOException ex) {
@@ -37,7 +35,6 @@ public class ChatClient {
     String getUserName() {
         return this.userName;
     }
- 
  
     public static void main(String[] args) {
         String hostname = "localhost";
